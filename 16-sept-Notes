@@ -206,3 +206,28 @@ In the SL CM Lab
 
 1 Ansible controller machine
 2 Worker nodes
+
+==========================================================
+
+Open SSH connection between Ansible Controller and worker nodes:
+==========================================
+
+On all the nodes (MASTER & WORKER)
+===========================================
+
+Execute these 4 steps:
+
+Step 1: Create a User (ansiuser) on Server1 and server2 - Mandatory
+Step 2: Create password for the user - Mandatory 
+
+Step 3: Give password authentication as Yes on both machine in this file: /etc/ssh/sshd_config
+ 
+Step 4: Give root permission to the ansiuser : /etc/sudoers
+
+Only on master Node
+====================================
+Step : Generate SSH key on Master node - Mandatory
+Step : Try to copy SSH public key on worker node  from master node
+
+
+
