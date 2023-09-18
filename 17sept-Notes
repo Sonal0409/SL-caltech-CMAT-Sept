@@ -1,0 +1,702 @@
+Hello Everyone!
+
+Trainer: Sonal Mittal
+=========================
+
+Agenda:
+========================
+
+> Introduction to Configuration management
+> Discuss on various Configuration management tools
+> Push and Pull approach in CM tool
+> Introduction to Ansible
+> Revist Ansible Architecture
+> Set up CM lab
+> Install Ansible and connect to Worker node.
+
+========================================================
+
+Configuration Management with Ansible and Infrastructure as code tool - Terraform 
+===========================================================
+Day 1: Notes: 
+===========================================================
+
+
+What is Configuration?
+
+ - making changes on a server so as to make your application run without any issues.
+ Changes include like:
+ - Creating new user
+ - creation of directories
+ - installing/upgrading/deletion of packages
+ - Copying of files in a destination directory
+ - running or stopping an application
+ - setting on evironment variable or configuration files
+
+Performing these changes on a single server is easy
+
+If I ask you do it on 20 servers? Manually --> increase servers to 200 servers
+
+Traditionally Configuration changes on various env like Dev, QA, prod 
+
+  > was performed with help Shell scripts
+  > different configuration for different envrionments
+  > Really good at shell scripting
+  > Maintain scripts, anyone who is not good scripting will find it diffuclt to read and understand the scripts
+  > Shell are written seperatly for OS
+
+
+Configuration Management: 
+
+- It is a process for maintaining your VMs, servers or computers in a desired and consistent state.
+- Ensure that the Vms continues to perform as expected.
+- In case of any deviation we should be able to bring back the servers to its desired state.
+- We desire to setup various servers with different changes automatically
+- In devOps we dont use shell scritps to perform CM on various Env
+- We make use of CM tools inorder to maintain consistency across the environments
+
+Advantages of using CM tools:
+===============================
+
+> Easy to use, easy to learn, no special coding skills are required
+
+> They will avoid manual errors while performing Configuration changes
+
+> Easily manage multiple environments using CM tools
+
+> Some times CM tool provides Common methods to apply changes on different OS
+
+> CM code in Version control tool-> sharing your configuration code with everyone
+
+> CM tools takes care of --> change Management also
+
+	- maintain documents about what changes are being done on servers
+        - which servers the changes are happing
+        - which application/files/directories the changes will imapct
+        - which user is doing the changes
+> CM tool will help you to deploy your source code across your infrastructure
+        
+
+Examples of CM tools:
+============================
+
+Puppet
+===============
+-> Introduced in 2005
+-> Obselete tool
+-> community version & Enterprise version of tool is available
+-> It is the oldest tool
+-> Architecture is of pull approch
+-> Linux & windows
+-> code is written using puppet DSL
+-> Architecture is little complex and set up is time consuming
+-> Uses SSL for communication between various VM
+-> puppet agent is to be installed on every Worker Node
+
+Ansible
+=================
+-> New tool, stable
+-> Open source tool
+-> Product of RedHat
+-> Can be installed only on Linux OS
+-> Architecture is of push approch
+-> code is written using YAML
+-> Architecture is simple and set up is simple
+-> Uses Open SSH for communication between various VM
+-> No agent process is installed on worker nodes -> Agentless tool
+
+Pull approach for CM tools:
+===================================
+- puppet
+- chef
+In pull approch changes are pulled by the agent nodes
+Controller node will not be making any changes on the agent nodes
+The agent nodes will poll for changes to controller node on a set polling schedule
+If they are new configuration changes on Conctroller node, agents will pull them and apply on themselves.
+
+Push approch for CM tools:
+==================================
+- Ansible
+- Saltstalk
+In push approch, the controller machine connects to the Worker nodes and apply the configuration changes
+No agent process runs on the worker nodes
+As the code is excuted on Controller machine, at the same time the changes are pushed on the worker nodes.
+====================================
+
+Ansible Architecture:
+====================================
+
+Inventory:
+=======================
+
+- simple files which has list of host servers Ip address, hostnames
+- this file will tell you which servers to do the changes
+- The default location is /etc/ansible/hosts
+- However we can create our own inventory file based on application or environment
+There are 2 types of inventory in Ansible:
+- Static inventory -> manully create the file and manually update the list of ip address of host servers
+- Dynamic inventory -> Servers on the cloud, automatically generate the inventory with list of Ec2 servers based on filter value.
+
+Modules:
+=====================
+ -> python programs written in Ansible 
+ -> pre written code available in Ansible
+ -> Using these modules we can easily do changes on worker nodes
+ -> We can also create our own modules using python
+ -> Ansible will connect to its nodes and push out script whicha re called as "Ansible Modules" on them.
+ -> In ansible there are 4000+ modules
+ -> Default location of modules on Ansible Controller machine : /usr/share/ansible/plugins/modules
+ -> Modules documentation is available at:
+https://docs.ansible.com/ansible/2.8/modules/list_of_all_modules.html
+ -> Most of the modules needs some parameters that the user has to pass, in order to make specific chnages on worker node
+For eg:
+
+ copy(src=/tmp/file1 dest=/tmp/newfile)
+ get_url(url=https://sample.url.com dest=/myapp/sample.war)
+
+
+Ansible Configuration file:
+===========================
+
+> This file is available on every controller machine 
+> The file has a name ansible.cfg file
+> default localtion is /etc/ansible
+> However we can create a custom ansible.cfg file
+> This file consist of 2 types of parameters:
+   > default parameters
+   > privilage parmeters
+> this files store information like:
+   > location of inventory file
+   > remote_user
+   > ssh details
+   > fork
+   > permissions
+
+Playbook:
+========================
+
+> Ansible code is written in playbook
+> Written IN YAML
+> 2 main information is written in playbook:
+   > host details --> get the information from the inventory file
+   > tasks details --> perform using ansible modules
+> The ansible playbook can be made reusable and robust with concepts like:
+   > Variables
+   > loops
+   > conditions
+   > blocks
+   > handling errors
+Ansible + Linux server
+=====================
+> when a playbook is exeucted ==> Ansible converts it into a python program
+> using SSH this python prgram is copied on each host server
+> Ansible then exeuctes this program ==> thereby applying the changes
+
+Ansible + windows host server:
+==============================
+Ansible connects to windows server via WINRM
+
+Windows playbook is written in YAML==> converted to powershell script and it is copied on windows host servers using WINRM
+
+if windows server has SSH we dont need winrm, ansible can directly copy the poewrshell script on the windows host
+
+============================================================
+
+In the SL CM Lab
+
+1 Ansible controller machine
+2 Worker nodes
+
+=============================================
+Passwordless authentication
+============================================
+Open SSH connection between Ansible Controller and worker nodes:
+==========================================
+
+On all the nodes (MASTER & WORKER)
+===========================================
+
+Execute these 4 steps:
+
+Step 1: Create a User (ansiuser) on Server1 and server2 - Mandatory
+Step 2: Create password for the user - Mandatory 
+
+Step 3: Give password authentication as Yes on both machine in this file: /etc/ssh/sshd_config
+ 
+Step 4: Give root permission to the ansiuser : /etc/sudoers
+
+Only on Ansible Controller Node
+====================================
+Step : Generate SSH key on Master node - as a user ansiuser Mandatory
+Step : Try to copy SSH public key on worker node  from master node
+
+
+Worker1: 172.31.47.98
+
+Worker2: 172.31.42.13
+
+Execute ansible commands to check if ansible is able to connect to worker nodes
+==============================================================
+
+Module 1: ping
+
+How to write ansible adhoc command
+
+# ansible ipdressHost -m ping
+
+Whenever ansible executes its module on a host server, make sure the ipaddress is present in the hosts file
+Other ansible will give you a message saying, host not found
+
+You can execute the module on both ips at the same time
+===============================================
+
+# ansible ipaddress1:ipaddress2 -m ping
+
+=================================
+
+Ansible is capable to connect to servers which are in different network
+
+I will create an ec2 ubuntu server on AWS lab --> worker3
+
+create ansiuser
+sshd-config
+sudoers
+copy ssh key
+
+Ansible can communicate via public IP
+
+==================================
+
+Right now we are executing ansible commands in the same directory as that of hosts files
+
+Can we execute ansible commands from different location -> yes
+By default when an ansible is executed, it goes to /etc/ansible/hosts file and fetches the host group information
+
+================================
+
+In real time, multiple people will working on a same ansible controller for different application
+
+It is not correct approch to use same inventory/hosts file and ansible config file
+
+We always create an custom invertory file and ansible.cfg for user or specific application changes
+
+===================================
+
+Ansible will first check for ansible.cfg file in current directory, if it is present it will take the inventory location
+
+If ansible.cfg is not present in current folder, it will look ansible.cfg file in /etc/ansible directory
+ Pick up the inventory file from /etc/asnible/ansible.cfg file
+
+======================================
+
+Right now we are creating inventory file and executing ansible command as an ansiuser.
+
+But lets us say, I am logged in as a different user and i want to run ansible commands and make configuration changes as
+ansiuser
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
