@@ -1,0 +1,785 @@
+
+Agenda:
+=================
+
+Playbook
+  > debug module
+  > register module
+  > user-defined variable in ansible
+  > Fact/magical/special variables
+  > when keyword
+  > loops in ansible
+  > tags and blocks in ansible
+
+
+========================================
+
+YAML Introduction:
+=======================================
+
+YAML => YAML Aint a mark up language
+
+YAML is not a programming or a scripting language
+
+YAML is just a method of storing your data just like an XML filr or JSON file
+
+YAML file will ahve an extesnion of .yml or .YAML
+
+YAML is declarative in nature -> key: value
+
+YAML is case sensitive and identation is important in YAML. **
+
+YAML file stores the data in the key as :
+  > with single value (String, integer, decimal, boolean)
+  > List of values
+  > can store a map/dictonary (key: value)
+
+In ansible we write the configuration code using YAML
+i.e the ansible playbook for making chnages on various host servers are written in YAML
+
+How to write YAML code:
+======================================
+--- indicates the begining of YAML
+
+key: value
+
+here:
+key ==> most of the times given to you by Ansible 
+
+value ==> is provided by the user
+
+Key can store single value:
+=============================
+
+---
+Training: Ansible
+Trainer: Sonal Mittal
+Start_date: 8Sep
+Time: 7PM IST
+Days: weekend
+
+Key can store list of values:
+=============================
+
+---
+Training: 
+  - Ansible
+  - DevOps
+  - Kubernetes
+  - Jenkins
+Trainer:
+  - Sonal Mittal
+  - James
+  - Alisha
+  - Ali
+Start_date: 8Sep
+Time: 7PM IST
+Days: weekend
+
+
+Key can store maps/dictonary:  Used in Ansible/kubernetes
+=============================
+
+map/dictonary in yaml is nothign but key: value
+
+Object in YAML: group of key and values(maps/dictonary)
+
+Trainer:
+ - name: SonalMittal
+   training:
+    - CMAT
+    - DevOps
+    - Jenkins
+ - name: James
+   phone: 243535345
+   email: asfsdfdfgdg@gmail.com
+   training: Jenkins
+timings:
+ - day1: weekend
+ - day2: weekdays
+
+
+Write a yaml code where you have a key with name as tasks
+the key stores an object
+with 1st map as name: sometext
+with 2nd map as task1: sometext
+
+user: root
+vars:
+  - var1
+  - var2
+  - var3
+tasks:
+  - name: this is my first object
+    task1: install java
+  - name: this is second object
+    tasks2: install maven
+  - name: this is 3rg object
+    tasks3: instll jenkins
+
+===============================================
+
+Linux commands:
+ adduser demouser
+ password demouser
+ group demouser
+ owner root
+ uid  2345
+ home: /home/demouser
+
+
+Write a YAML code that will create 2 users with aboive provided data
+
+Your key is Users:
+
+---
+user:
+- user1:
+   adduser: demouser
+   password: demouser
+   group: demouser
+   owner: root
+   uid: 123
+   home: /home/demouser
+- user2:
+ adduser: demouser
+ password: demouser
+ group: demouser
+ owner: root
+ uid: 123
+ home: /home/demouser
+
+============================================
+
+Playbooks in Ansible:
+================================
+
+Inventory file: Itd file with host server ipaddress in it
+Modules: Pre-written code to make changes
+
+Adhoc command
+
+ansible host1 -m command
+
+
+
+> Need to run multiple modules one after the other, then adhoc commands are not suitable
+> Need to run set of modules to be executed again and again at regualr intervals,  then adhoc commands are not suitable
+> if you want to use variables, conditions, loops, block of code,  then adhoc commands are not suitable
+> If you want to share your tasks with your team,  then adhoc commands are not suitable
+> if you want your code to be reuable by tohers in your team,  then adhoc commands are not suitable
+
+WE WILL USE PLAYBOOKS ***
+=======================
+Ansible admin will write using YAML
+In a playbook you will host details and set of tasks to be executed on host server
+Need to run multiple modules one after the other
+Need to run set of modules to be executed again and again at regualr intervals
+if you want to use variables, conditions, loops, block of code,
+if you want your code to be reuable by tohers in your team,
+
+A playbook consist of multiple plays
+plays consist of host server details and tasks details on it
+tasks section consist of task name and module name which is to be executed on host servers
+
+Structure of playbook: YAML
+============================
+
+---
+
+- name: play1
+  hosts: webserver
+  tasks:
+  - name: Execute tasks1
+    moduleName: par1=value par2=value
+  - name: Execute task2 on webserver
+    moduleName: par1=value par2=value
+
+- name: play2
+  hosts: dbserver
+  tasks:
+  - name: Execute tasks1
+    moduleName: par1=value par2=value
+  - name: Execute task2 on webserver
+    moduleName: par1=value par2=value
+
+
+- name: play3
+  hosts: javaapp
+  tasks:
+  - name: Execute tasks1
+    moduleName: par1=value par2=value
+  - name: Execute task2 on webserver
+    moduleName: par1=value par2=value
+
+
+
+========================================
+
+
+Variable: Is a temporary memory location on machine storing some data
+
+Whenever a command is executed it output by default will not be printed on the console
+We have to use a keyword of ansible called as register
+with this register keyword we will create a variable name
+This variable will store the output of command
+
+Ansible ---> execute --> command --> register the output--> in a variable --> print the variable
+
+Register:
+
+It is a way of capturing the output from a task execution
+Register store output ina  variable
+This variable value can be printed or can be used further in your playbook.
+Register varibale will store data differently for each host
+
+Use register variable:
+> print the output for user
+> use it to set conditions further in your playbook
+  for eg: if register_varaible value = centos  ==> install pakg1 and pkg2
+          if register_varaible value = ubuntu  ==> install pakg3 and pkg4
+
+=======================
+
+Variables In Ansible:
+===========================
+
+In ansible variables can be used in a playbook to pass different data 
+
+Every variable in a playbookw ill have a unique name
+
+A variable can have single value or multiple values
+
+We write the variable in the playbook tasks
+
+These tasks when executed will refer to the variable and fetch its value
+
+There are 2 types of variables:
+
+
+
+  > Fact variable -- tomorrow
+    > the name of variable and its value is given to you by Ansible
+
+
+  > Custom variable --> today
+     > Variable name and its value is given user
+
+
+Variable in a playbook are written ina seprate section called as vars
+
+vars:
+ var1: value
+ valr2: value
+
+Call/refer the variable in tasks:
+
+"{{varname}}"
+
+A variable name can start with upper case and lower case
+A varibale name can contain, chanrcters and _
+variable will not start with ansible
+give meaningful nameto your variable
+
+Become is a plugin in Ansible.
+===================================
+It allows the ansiuser to escalate its permission
+
+Ansiuser will execute the playbook but will not be able to run the tasks releated to installtion
+
+Using the become plugin we can escalate the permissions of ansiuser
+
+become by default is false
+
+become: true
+
+We are adding root permissions to ansiuser
+
+become_user: root
+
+======================
+
+
+Create a file with name as variables.yml
+
+   pkg_name: apache2
+   pkg_state: present
+   file_path: /tmp/demo2.txt
+   file_state: touch
+
+vars_files
+ - variables
+
+--extra-vars var1="value"
+
+=====================================
+
+Fact Variables
+
+=====================================
+
+Facts ==> are little snippets of information about host servers
+
+Fact variables are temporary location which stores the facts of each host server
+
+There are close to 900 fact varisbales
+
+Fact variables includes information like: BIOS, Hostname, Architecture, mount, Memory, ipaddress etc ..
+
+This information of host servers is fetched by ansible controller using setup module
+
+Everytime a playbook runs by default it will run setup module to gather fatcs about host server
+
+These variables whicha re fetched will be stored temporarily at /etc/ansible/facts.d
+
+
+Fact variables are dynamic/ special/ magical variables
+
+These variable will unique value for each server
+
+These variable name is given by Ansible --> you cannot chagne it
+These variable value is computed by Ansible --> you cannot assign a value to the fact variable
+Every fact variable starts with ansible_var_name
+
+Fact variables are mainly used for:
+=======================
+
+Dyniamically updating configuration on  host servers
+
+used to apply conditions/decision in the playbook
+
+
+ "ansible_os_family": "Debian",
+
+Install httpd package on the servers
+
+when(if) ansible_os_family of host servers is Redhat
+
+when os_family is not Redhat then install apache2
+
+
+if condition is written by ansible using keyword ==> when
+
+
+"ansible_distribution": "Ubuntu",
+
+"ansible_distribution_version": "20.04",
+
+
+===========================================
+
+
+If you want  a module to be executed again and again with a different set of value then we use loops
+
+I want to create 10 users in my hosts erver
+
+module :   data
+user: name:sonal
+
+user: name:ravi
+
+user: name:james
+
+user: name:Tom
+
+
+Use loops:
+======================
+
+user: name={{items}}
+loop:
+ - Sonal
+ - Ravi
+ - James
+ - Tom
+when: ansible_distribution=="Ubuntu"
+
+Write a playbook to install following packages on hostservers:
+
+LAMP
+=========================
+apache2
+mysql-server
+php-mysql
+php
+
+
+git
+docker
+nano
+tree
+
+
+user: name={{item.a}} home={{item.b}}
+
+
+loop:
+- {a: Ravi,b: /tmp/Ravi}
+- {a: Sonal,b: /tmp/Sonal}
+- {a: James,b: /tmp/james}
+
+
+---
+- name: Creating users and creating files/dir
+  hosts: localhost:172.31.21.30
+  become: yes
+  tasks:
+   - name: User creation
+     user:
+      name: "{{item.a}}"
+      home: "{{item.b}}"
+     loop:
+      - {a: Bob,b: /tmp/bob}
+      - {a: Ravi,b: /tmp/Ravi}
+   - name: Creating files/dirs in user home dir
+     file:
+      name: "{{item.d}}"
+      state: "{{item.e}}"
+     loop:
+      - {d: /tmp/bob/file1,e: touch}
+      - {d: /tmp/Ravi/dir1,e: directory}
+
+
+
+Handlers  tasks will run when notified by the parent task
+
+Notification will occur if parent task status is changed
+
+If we have task number 2 with status as changed and which notified the handler task
+
+The handler task will not not run
+
+Handler task in ansible always executed at the end
+
+
+task 1 ==> notify handler 1
+
+task2 ==> notify handler 2
+
+task4  ==> notify handler 
+
+task5 ==> notify handler 
+
+task6 ==> fails
+
+If your playbook has failed, then no handler task will ge t executed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Modules in Ansible are pre-written code given to you by ansible
+=======
+These modules are written in python. It is not written in YAML.
+The modules are like functions that executes and performs a change on the host server
+
+Playbook: It is also an Ansible file written by users
+=========
+In this file we can host group servers and we call the Ansible modules
+This playbook will be written in YAML
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
