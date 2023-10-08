@@ -1,0 +1,57 @@
+Agenda:
+==========================
+
+Demo 1: Add shared credenatils parameter:
+
+Install Aws CLI on lab server
+
+Configure AWS to save accesskey and secret key in a credentials file
+
+terrform code will use this credials file to get credentials and connect to AWS
+
+This file can be accessed by all the TF configuration file -> Shared credentails
+
+Observation: we will not be hard coding the cedentials in the TF config file
+
+Download the AWS provider plugin. Once we download the AWS provider plugin only then we can satrt working with terraform code
+
+
+DEMO 2:  Resource block- ec2 server
+
+Whenever we will create any infrastructure we create a resource block
+
+Resource = AWS services
+
+
+resource "aws_Resource_name" "User_GIVEN_block_name" {
+
+parameters = "value"
+
+
+}
+
+Demo 3: Data  block for ami => aws_ami
+
+
+This block will get data  from AWS based on the filters that user gives.
+This block will then supply data to the resource block
+
+
+Demo 4: Resource 
+
+Create the EC2 instance
+
+-> Elastic IP address
+
+
+Demo 5:
+
+> output block
+
+Once a resource is created on AWS, if you want to print an atrribute value on terraform console, then we will use output block
+
+Demo6: Associate reosurce with ec2 instance
+
+
+
+
